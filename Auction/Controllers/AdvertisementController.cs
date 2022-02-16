@@ -5,7 +5,7 @@ namespace Auction.Controllers
 {
     [ApiController]
     [Route("api/[controller]")] //surfa till api/advertisement
-    public class AdvertisementController:ControllerBase
+    public class AdvertisementController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
@@ -18,7 +18,7 @@ namespace Auction.Controllers
         public IEnumerable<AdvertisementDTO> Get()
         {
             return _context.Ads.Select(a => new AdvertisementDTO
-            {       
+            {
                 Id = a.Id,
                 Title = a.Title,
                 Description = a.Description,
@@ -26,7 +26,7 @@ namespace Auction.Controllers
                 StartDate = a.StartDate,
                 EndDate = a.EndDate,
                 PopularityPercent = a.PopularityPercent
-               
+
             });
         }
 
@@ -52,52 +52,42 @@ namespace Auction.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<AdvertisementDTO> Create(AdvertisementNewDTO model)
         {
+
             var ad = new Advertisement
             {
                 Title = model.Title,
-                StartingPrice= model.StartingPrice,
+                StartingPrice = model.StartingPrice,
                 EndDate = model.EndDate,
-                StartDate=DateTime.UtcNow,
+                StartDate = DateTime.UtcNow,
                 Description = model.Description,
-                PopularityPercent=model.PopularityPercent
+                PopularityPercent = model.PopularityPercent
             };
             _context.Ads.Add(ad);
             _context.SaveChanges();
             int id = ad.Id;
 
             //map
-            var obj = new AdvertisementDTO();  
-            obj.Title=ad.Title;
-            obj.Description=ad.Description;
-            obj.StartingPrice=ad.StartingPrice;
-            obj.EndDate=ad.EndDate;
-            obj.StartDate=ad.StartDate;
-            obj.PopularityPercent=ad.PopularityPercent;
+            var obj = new AdvertisementDTO();
+            obj.Title = ad.Title;
+            obj.Description = ad.Description;
+            obj.StartingPrice = ad.StartingPrice;
+            obj.EndDate = ad.EndDate;
+            obj.StartDate = ad.StartDate;
+            obj.PopularityPercent = ad.PopularityPercent;
+
 
             return CreatedAtAction(nameof(GetSingleAd), new { id = id }, obj);
+
         }
 
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] AdvertisementDTO model)
         {
-          
-            var ad=_context.Ads.FirstOrDefault(a=>a.Id == id);
-            if(ad == null) return NotFound();
-            ad.Title = model.Title;
-            ad.Description = model.Description;
-            ad.StartingPrice=model.StartingPrice;
-            ad.EndDate=model.EndDate;
-            ad.StartDate=model.StartDate;
-            ad.PopularityPercent=model.PopularityPercent;
-            _context.SaveChanges();
-            return NoContent();
-        }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id,[FromBody] AdvertisementDTO model)
-        {
             var ad = _context.Ads.FirstOrDefault(a => a.Id == id);
             if (ad == null) return NotFound();
             ad.Title = model.Title;
@@ -106,11 +96,20 @@ namespace Auction.Controllers
             ad.EndDate = model.EndDate;
             ad.StartDate = model.StartDate;
             ad.PopularityPercent = model.PopularityPercent;
+            _context.SaveChanges();
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var ad = _context.Ads.FirstOrDefault(a => a.Id == id);
+            if (ad == null) return NotFound();
 
             _context.Ads.Remove(ad);
             _context.SaveChanges();
             return NoContent();
         }
 
-        }
+    }
 }

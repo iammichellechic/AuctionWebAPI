@@ -8,6 +8,8 @@ namespace Auction.Data
 
         [MaxLength(100)]
         public string Title { get; set; }
+
+        [Range(0,1000000)]
         public decimal StartingPrice { get; set; }
      
         [MaxLength(500)]
