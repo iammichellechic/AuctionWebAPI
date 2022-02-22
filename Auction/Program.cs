@@ -1,14 +1,29 @@
 using Auction.Data;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c=>
+{
+    //added -assign operation name
+
+    c.CustomOperationIds(apiDescription =>
+    {
+        return apiDescription.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null;
+    });
+});
+
+//added
+builder.Services.AddControllers().AddNewtonsoftJson();
+
+//builder.Services.AddSwaggerGen().AddSwaggerGenNewtonsoftSupport();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
@@ -34,7 +49,11 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c=>
+    {
+        //added
+        c.DisplayOperationId();
+    });
 }
 
 app.UseCors("AllowAll");

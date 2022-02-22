@@ -1,4 +1,5 @@
 ﻿using Auction.Data;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auction.Controllers
@@ -13,6 +14,11 @@ namespace Auction.Controllers
         {
             _context = context;
         }
+
+        /// <summary>
+        /// Lists all the ads available
+        /// </summary>
+        /// <returns></returns>
 
         [HttpGet]  // R
         public IEnumerable<AdvertisementDTO> Get()
@@ -30,9 +36,15 @@ namespace Auction.Controllers
             });
         }
 
+        /// <summary>
+        /// Returns a specific ad
+        /// </summary>
+        /// <returns></returns>
 
         [HttpGet]  // R 24
         [Route("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult GetSingleAd(int id)
         {
             var advertisement = _context.Ads.Where(a => a.Id == id).Select(a => new AdvertisementDTO
@@ -50,7 +62,10 @@ namespace Auction.Controllers
                 return NotFound();
             return Ok(advertisement);
         }
-
+        /// <summary>
+        /// Adds a new ad
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -85,6 +100,8 @@ namespace Auction.Controllers
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Put(int id, [FromBody] AdvertisementDTO model)
         {
 
@@ -111,5 +128,22 @@ namespace Auction.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{id}")]
+        public IActionResult Patch(int id, [FromBody] JsonPatchDocument model)
+        {
+            var ad = _context.Ads.FirstOrDefault(a => a.Id == id);
+
+            if (ad == null) return NotFound();
+            //ad.Title = model.Title;
+            //ad.Description = model.Description;
+            //ad.StartingPrice = model.StartingPrice;
+            //ad.EndDate = model.EndDate;
+            //ad.StartDate = model.StartDate;
+            //ad.PopularityPercent = model.PopularityPercent;
+            model.ApplyTo(ad);
+            _context.SaveChanges();
+            return NoContent();
+
+        }
     }
 }
